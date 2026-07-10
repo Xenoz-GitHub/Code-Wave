@@ -2,9 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "env": {
-    "DATABASE_URL": "@neon-database-url",
-    "NEXT_PUBLIC_NEON_AUTH_URL": "@neon-auth-url"
-  }
+  "installCommand": "npm install"
 }
