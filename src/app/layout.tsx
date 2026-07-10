@@ -5,13 +5,10 @@ import '@neondatabase/neon-js/ui/css'
 import { authClient } from '@/lib/auth'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import './globals.css'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false)
-
   useEffect(() => {
-    setMounted(true)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
@@ -32,18 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body className="h-full">
-        {mounted && (
-          <NeonAuthUIProvider emailOTP authClient={authClient}>
-            <ThemeProvider>
-              {children}
-            </ThemeProvider>
-          </NeonAuthUIProvider>
-        )}
-        {!mounted && (
-          <div className="h-full flex items-center justify-center bg-[var(--background)]">
-            <div className="animate-spin w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full" />
-          </div>
-        )}
+        <NeonAuthUIProvider emailOTP authClient={authClient}>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </NeonAuthUIProvider>
       </body>
     </html>
   )
