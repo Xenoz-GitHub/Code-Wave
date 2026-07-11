@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth'
+import { Download, Upload, X, Trash, Spinner, Plus } from '@/lib/icons'
 
 export const dynamic = 'force-dynamic'
 
@@ -135,9 +136,9 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-semibold">Your Projects</h1>
             <button
               onClick={() => setShowNew(!showNew)}
-              className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition"
+              className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5"
             >
-              + New Project
+              <Plus /> New Project
             </button>
           </div>
 
@@ -204,25 +205,28 @@ export default function DashboardPage() {
                       />
                       <button
                         onClick={(e) => { e.stopPropagation(); importRefs.current[project.id]?.click() }}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-[var(--accent)] transition"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:text-[var(--accent)] transition"
+                        style={{ color: 'var(--foreground-muted)' }}
                         title="Import ZIP"
                       >
-                        📂
+                        <Upload />
                       </button>
                       <button
                         onClick={(e) => exportProject(project.id, project.name, e)}
                         disabled={exportingId === project.id}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-[var(--accent)] transition disabled:opacity-30"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:text-[var(--accent)] transition disabled:opacity-30"
+                        style={{ color: 'var(--foreground-muted)' }}
                         title="Export ZIP"
                       >
-                        {exportingId === project.id ? '⏳' : '📦'}
+                        {exportingId === project.id ? <Spinner /> : <Download />}
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteProject(project.id) }}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 transition"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition"
+                        style={{ color: 'var(--foreground-muted)' }}
                         title="Delete"
                       >
-                        ✕
+                        <Trash />
                       </button>
                     </div>
                   </div>

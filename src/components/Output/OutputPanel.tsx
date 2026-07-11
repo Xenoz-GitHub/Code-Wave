@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Terminal, ChevronDown, ChevronUp } from '@/lib/icons'
 
 type Props = {
   output: string
@@ -14,9 +15,10 @@ export default function OutputPanel({ output }: Props) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="shrink-0 px-4 py-1 text-xs text-gray-400 border-t border-[var(--border-color)] bg-[var(--panel-bg)] hover:text-[var(--accent)] transition"
+        className="shrink-0 px-4 py-1 text-xs flex items-center gap-1 border-t border-[var(--border-color)] bg-[var(--panel-bg)] hover:text-[var(--accent)] transition"
+        style={{ color: 'var(--foreground-muted)' }}
       >
-        ▲ Show Output
+        <ChevronUp /> Show Output
       </button>
     )
   }
@@ -27,16 +29,18 @@ export default function OutputPanel({ output }: Props) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setTab('output')}
-            className={`text-xs px-2 py-0.5 rounded ${tab === 'output' ? 'bg-[var(--accent)] text-white' : 'hover:text-[var(--accent)]'}`}
+            className={`text-xs px-2 py-0.5 rounded flex items-center gap-1 ${tab === 'output' ? 'bg-[var(--accent)] text-white' : 'hover:text-[var(--accent)]'}`}
+            style={tab !== 'output' ? { color: 'var(--foreground-muted)' } : {}}
           >
-            Output
+            <Terminal /> Output
           </button>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="text-xs text-gray-400 hover:text-white transition"
+          className="text-xs flex items-center gap-1 transition"
+          style={{ color: 'var(--foreground-muted)' }}
         >
-          ▼ Hide
+          <ChevronDown /> Hide
         </button>
       </div>
       <pre className="p-3 text-xs font-mono overflow-y-auto whitespace-pre-wrap text-green-400" style={{ maxHeight: '25vh' }}>

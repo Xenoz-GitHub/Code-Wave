@@ -11,6 +11,7 @@ import LivePreview from '@/components/Preview/LivePreview'
 import MobileFileDrawer from '@/components/FileManager/MobileFileDrawer'
 import CollaborationOverlay from '@/components/Collaboration/CollaborationOverlay'
 import { getLanguageFromFileName } from '@/lib/utils'
+import { ChevronLeft, ArrowLeft, Sun, Moon, Download, Upload, Folder, FilePlus, Eye, Play, Users, Plus, X, FileIcon, Spinner } from '@/lib/icons'
 
 export const dynamic = 'force-dynamic'
 
@@ -365,9 +366,9 @@ export default function EditorPage() {
         <div className="flex items-center gap-2 min-w-0">
           <button
             onClick={() => router.push('/dashboard')}
-            className="p-1 hover:text-[var(--accent)] transition text-sm shrink-0"
+            className="p-1 hover:text-[var(--accent)] transition shrink-0"
             title="Back to Dashboard"
-          >←</button>
+          ><ArrowLeft /></button>
           <span className="text-sm font-medium truncate max-w-[100px] sm:max-w-[200px]">
             {project?.name || 'Loading...'}
           </span>
@@ -386,38 +387,38 @@ export default function EditorPage() {
           {collabUsers.length > 0 && (
             <button
               onClick={() => setShowCollab(!showCollab)}
-              className="p-1 text-xs hover:text-[var(--accent)] transition relative"
+              className="p-1 hover:text-[var(--accent)] transition relative flex items-center gap-1"
               title={`${collabUsers.length} connected`}
             >
-              👥 {collabUsers.length}
+              <Users /> <span className="text-xs">{collabUsers.length}</span>
             </button>
           )}
-          <button onClick={toggleTheme} className="p-1.5 text-sm hover:text-[var(--accent)] transition" title="Toggle Theme">
-            {theme === 'dark' ? '☀️' : '🌙'}
+          <button onClick={toggleTheme} className="p-1.5 hover:text-[var(--accent)] transition" title="Toggle Theme">
+            {theme === 'dark' ? <Sun /> : <Moon />}
           </button>
           <button onClick={handleExport} disabled={exporting}
-            className="p-1.5 text-sm hover:text-[var(--accent)] transition disabled:opacity-50" title="Export as ZIP">
-            {exporting ? '⏳' : '📦'}
+            className="p-1.5 hover:text-[var(--accent)] transition disabled:opacity-50" title="Export as ZIP">
+            {exporting ? <Spinner /> : <Download />}
           </button>
           <input ref={importRef} type="file" accept=".zip" className="hidden" onChange={handleImport} />
           <button onClick={() => importRef.current?.click()} disabled={importing}
-            className="p-1.5 text-sm hover:text-[var(--accent)] transition disabled:opacity-50" title="Import ZIP">
-            {importing ? '⏳' : '📂'}
+            className="p-1.5 hover:text-[var(--accent)] transition disabled:opacity-50" title="Import ZIP">
+            {importing ? <Spinner /> : <Upload />}
           </button>
           {!isDesktop && (
             <button onClick={() => setShowMobileDrawer(true)}
-              className="md:hidden p-1.5 text-sm hover:text-[var(--accent)] transition" title="Files">
-              📁
+              className="md:hidden p-1.5 hover:text-[var(--accent)] transition" title="Files">
+              <Folder />
             </button>
           )}
           <button onClick={handlePreview}
-            className={`p-1.5 text-sm rounded transition ${showPreview ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'hover:text-[var(--accent)]'}`}
+            className={`p-1.5 rounded transition ${showPreview ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'hover:text-[var(--accent)]'}`}
             title="Live Preview">
-            👁️
+            <Eye />
           </button>
           <button onClick={handleRun} disabled={isRunning || !activeFile}
-            className="px-3 py-1 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700 transition disabled:opacity-50">
-            {isRunning ? 'Running...' : '▶ Run'}
+            className="px-3 py-1 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-1">
+            {isRunning ? <><Spinner /> Running...</> : <><Play /> Run</>}
           </button>
         </div>
       </header>
@@ -460,7 +461,7 @@ export default function EditorPage() {
                     }`}>
                     <span className={`w-2 h-2 rounded-full ${getFileIconColor(f.name)}`} />
                     <span className="truncate max-w-[80px] sm:max-w-[120px]">{f.name}</span>
-                    <button onClick={(e) => handleTabClose(fileId, e)} className="ml-1 p-0.5 hover:text-red-400 transition shrink-0">✕</button>
+                    <button onClick={(e) => handleTabClose(fileId, e)} className="ml-1 p-0.5 hover:text-red-400 transition shrink-0"><X /></button>
                   </div>
                 )
               })}

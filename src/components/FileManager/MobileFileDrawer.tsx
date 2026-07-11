@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { FileIcon, FilePlus, Edit, Trash, Upload, Plus, X, Spinner } from '@/lib/icons'
 
 type File = {
   id: string
@@ -73,14 +74,8 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
     setRenameValue('')
   }
 
-  function getFileIcon(name: string): string {
-    const ext = name.split('.').pop()?.toLowerCase()
-    if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '')) return '🖼️'
-    const icons: Record<string, string> = {
-      js: '📄', ts: '📘', html: '🌐', css: '🎨', json: '📋', py: '🐍',
-      rs: '🦀', go: '🔷', md: '📝',
-    }
-    return icons[ext || ''] || '📄'
+  function renderFileIcon(name: string) {
+    return <FileIcon name={name} />
   }
 
   const rootFiles = files.filter((f) => !f.parentId)
@@ -92,12 +87,12 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)]">
           <span className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>Files</span>
           <div className="flex items-center gap-2">
-            <label className="text-sm cursor-pointer hover:text-[var(--accent)] transition">
-              {uploading ? '⏳' : '📤'}
+            <label className="text-sm cursor-pointer hover:text-[var(--accent)] transition p-1">
+              {uploading ? <span className="animate-spin inline-block"><Spinner /></span> : <Upload />}
               <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} />
             </label>
-            <button onClick={() => setShowNewInput(true)} className="text-sm hover:text-[var(--accent)] transition">+</button>
-            <button onClick={onClose} className="text-sm" style={{ color: 'var(--foreground-muted)' }}>✕</button>
+            <button onClick={() => setShowNewInput(true)} className="p-1 hover:text-[var(--accent)] transition"><Plus /></button>
+            <button onClick={onClose} className="p-1" style={{ color: 'var(--foreground-muted)' }}><X /></button>
           </div>
         </div>
 
@@ -117,7 +112,7 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
 
           {rootFiles.length === 0 && (
             <div className="text-center py-8 text-sm" style={{ color: 'var(--foreground-muted)' }}>
-              No files yet. Tap + to create or 📤 to upload.
+              No files yet. Tap + to create or upload a ZIP.
             </div>
           )}
 
@@ -144,7 +139,7 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
                       autoFocus onClick={(e) => e.stopPropagation()} />
                   ) : (
                     <>
-                      <span>{getFileIcon(file.name)}</span>
+                      <span className="flex items-center">{renderFileIcon(file.name)}</span>
                       <span className="truncate">{file.name}</span>
                     </>
                   )}
@@ -154,12 +149,12 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
                     <button
                       onClick={(e) => { e.stopPropagation(); setRenamingId(file.id); setRenameValue(file.name) }}
                       className="p-1 hover:text-[var(--accent)] transition" title="Rename">
-                      ✏️
+                      <Edit />
                     </button>
                   )}
                   <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id, file.name) }}
                     className="p-1 hover:text-red-400 transition" title="Delete">
-                    ✕
+                    <X />
                   </button>
                 </div>
               </div>

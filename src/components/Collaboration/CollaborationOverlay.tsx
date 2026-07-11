@@ -1,5 +1,7 @@
 'use client'
 
+import { X } from '@/lib/icons'
+
 type CollabUser = {
   id: string
   name: string
@@ -18,7 +20,7 @@ export default function CollaborationOverlay({ users, onClose }: Props) {
     <div className="absolute top-10 right-2 z-40 w-64 rounded-lg border border-[var(--border-color)] bg-[var(--panel-bg)] shadow-xl">
       <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)]">
         <span className="text-xs font-semibold">Collaborators ({users.length})</span>
-        <button onClick={onClose} className="text-xs text-gray-400 hover:text-white transition">✕</button>
+        <button onClick={onClose} className="p-0.5 hover:text-white transition" style={{ color: 'var(--foreground-muted)' }}><X /></button>
       </div>
       <div className="p-2 space-y-1">
         {users.map((u, i) => (

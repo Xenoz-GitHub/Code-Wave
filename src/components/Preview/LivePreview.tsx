@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Smartphone, Tablet, Monitor } from '@/lib/icons'
 
 type Props = {
   code: string
@@ -51,7 +52,7 @@ export default function LivePreview({ code, language }: Props) {
                   : 'hover:bg-[var(--border-color)]'
               }`}
               style={previewMode === mode ? { backgroundColor: 'var(--accent)' } : { color: 'var(--foreground-muted)' }}>
-              {mode === 'mobile' ? '📱' : mode === 'tablet' ? '📟' : '🖥️'}
+              {mode === 'mobile' ? <Smartphone /> : mode === 'tablet' ? <Tablet /> : <Monitor />}
             </button>
           ))}
         </div>

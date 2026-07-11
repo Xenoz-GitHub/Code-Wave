@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { FileIcon, FilePlus, Edit, Trash, Plus, X, Folder } from '@/lib/icons'
 
 type File = {
   id: string
@@ -81,16 +82,8 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
     setRenameValue('')
   }
 
-  function getFileIcon(name: string): string {
-    const ext = name.split('.').pop()?.toLowerCase()
-    if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '')) return '🖼️'
-    const icons: Record<string, string> = {
-      js: '📄', ts: '📘', jsx: '⚛️', tsx: '⚛️',
-      html: '🌐', css: '🎨', json: '📋', py: '🐍',
-      rs: '🦀', go: '🔷', cpp: '⚡', c: '⚡',
-      md: '📝', svg: '🖼️', sql: '🗄️', yaml: '📋', yml: '📋', sh: '💻', bash: '💻',
-    }
-    return icons[ext || ''] || '📄'
+  function renderFileIcon(name: string) {
+    return <FileIcon name={name} />
   }
 
   const rootFiles = files.filter((f) => !f.parentId)
@@ -101,7 +94,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
         <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--foreground-muted)' }}>Files</span>
         <div className="flex gap-1">
           <button onClick={() => { setShowNewInput(true); setTimeout(() => inputRef.current?.focus(), 50) }}
-            className="p-0.5 text-xs hover:text-[var(--accent)] transition" title="New File">+</button>
+            className="p-0.5 hover:text-[var(--accent)] transition" title="New File"><Plus /></button>
         </div>
       </div>
 
@@ -110,7 +103,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
 
         {showNewInput && (
           <div className="flex items-center gap-1 px-2 py-1">
-            <span className="text-xs">📄</span>
+            <FileIcon name="new.js" />
             <input ref={inputRef} value={newFileName}
               onChange={(e) => setNewFileName(e.target.value)}
               onKeyDown={(e) => {
@@ -125,7 +118,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
 
         {rootFiles.length === 0 && !isDragActive && (
           <div className="text-xs text-center py-8 px-2" style={{ color: 'var(--foreground-muted)' }}>
-            No files yet<br />Drop files here or click + to create
+            No files yet<br />Drop files here or tap + to create
           </div>
         )}
 
@@ -142,7 +135,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
             onRenameChange={(v) => setRenameValue(v)}
             onRenameSubmit={submitRename}
             onRenameCancel={() => setRenamingId(null)}
-            getIcon={getFileIcon}
+            getIcon={renderFileIcon}
           />
         ))}
 
@@ -168,7 +161,7 @@ function FileItem({ file, isActive, isRenaming, renameValue, onSelect, onDelete,
   onRenameChange: (v: string) => void
   onRenameSubmit: () => void
   onRenameCancel: () => void
-  getIcon: (name: string) => string
+  getIcon: (name: string) => React.ReactNode
 }) {
   const [showActions, setShowActions] = useState(false)
 
@@ -204,9 +197,9 @@ function FileItem({ file, isActive, isRenaming, renameValue, onSelect, onDelete,
       {!isRenaming && (showActions || isActive) && file.type !== 'folder' && (
         <div className="flex items-center gap-0.5 shrink-0">
           <button onClick={(e) => { e.stopPropagation(); onRename() }}
-            className="p-0.5 opacity-0 group-hover:opacity-100 hover:text-[var(--accent)] transition" title="Rename">✏️</button>
+            className="p-0.5 opacity-0 group-hover:opacity-100 hover:text-[var(--accent)] transition" title="Rename"><Edit /></button>
           <button onClick={(e) => { e.stopPropagation(); onDelete() }}
-            className="p-0.5 text-gray-400 hover:text-red-400 transition" title="Delete">✕</button>
+            className="p-0.5 hover:text-red-400 transition" style={{ color: 'var(--foreground-muted)' }} title="Delete"><X /></button>
         </div>
       )}
     </div>
