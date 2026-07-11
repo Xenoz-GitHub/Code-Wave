@@ -20,11 +20,14 @@ type Props = {
   onFileCreated: (file: File) => void
   onFileDeleted: (id: string) => void
   onFileUpload: (file: File) => void
+  onFileRename?: (id: string, newName: string) => void
 }
 
-export default function FileTree({ files, projectId, activeFileId, onFileSelect, onFileCreated, onFileDeleted, onFileUpload }: Props) {
+export default function FileTree({ files, projectId, activeFileId, onFileSelect, onFileCreated, onFileDeleted, onFileUpload, onFileRename }: Props) {
   const [showNewInput, setShowNewInput] = useState(false)
   const [newFileName, setNewFileName] = useState('')
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -37,9 +40,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
           const res = await fetch('/api/upload', { method: 'POST', body: formData })
           const data = await res.json()
           if (data.id) onFileUpload(data)
-        } catch (e) {
-          console.error('Upload failed:', e)
-        }
+        } catch (e) { console.error('Upload failed:', e) }
       }
     },
   })
@@ -57,9 +58,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
         onFileCreated(data)
         onFileSelect(data.id)
       }
-    } catch (e) {
-      console.error(e)
-    }
+    } catch (e) { console.error(e) }
     setNewFileName('')
     setShowNewInput(false)
   }
@@ -70,46 +69,49 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
     onFileDeleted(id)
   }
 
+  function startRename(id: string, name: string) {
+    setRenamingId(id)
+    setRenameValue(name)
+  }
+
+  async function submitRename() {
+    if (!renamingId || !renameValue.trim()) return
+    if (onFileRename) onFileRename(renamingId, renameValue.trim())
+    setRenamingId(null)
+    setRenameValue('')
+  }
+
   function getFileIcon(name: string): string {
     const ext = name.split('.').pop()?.toLowerCase()
+    if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '')) return '🖼️'
     const icons: Record<string, string> = {
       js: '📄', ts: '📘', jsx: '⚛️', tsx: '⚛️',
       html: '🌐', css: '🎨', json: '📋', py: '🐍',
       rs: '🦀', go: '🔷', cpp: '⚡', c: '⚡',
-      md: '📝', svg: '🖼️', png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️',
-      sql: '🗄️', yaml: '📋', yml: '📋', sh: '💻', bash: '💻',
+      md: '📝', svg: '🖼️', sql: '🗄️', yaml: '📋', yml: '📋', sh: '💻', bash: '💻',
     }
-    if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '')) return '🖼️'
     return icons[ext || ''] || '📄'
   }
 
   const rootFiles = files.filter((f) => !f.parentId)
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)]">
-        <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Files</span>
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--foreground-muted)' }}>Files</span>
         <div className="flex gap-1">
-          <button
-            onClick={() => { setShowNewInput(true); setTimeout(() => inputRef.current?.focus(), 50) }}
-            className="p-0.5 text-xs hover:text-[var(--accent)] transition"
-            title="New File"
-          >
-            +
-          </button>
+          <button onClick={() => { setShowNewInput(true); setTimeout(() => inputRef.current?.focus(), 50) }}
+            className="p-0.5 text-xs hover:text-[var(--accent)] transition" title="New File">+</button>
         </div>
       </div>
 
-      {/* Drop zone */}
-      <div {...getRootProps()} className={`flex-1 overflow-y-auto p-1 ${isDragActive ? 'bg-[var(--accent)]/10' : ''}`}>
+      <div {...getRootProps()} className={`flex-1 overflow-y-auto p-1 relative ${isDragActive ? 'bg-[var(--accent)]/10' : ''}`}>
         <input {...getInputProps()} />
 
         {showNewInput && (
           <div className="flex items-center gap-1 px-2 py-1">
             <span className="text-xs">📄</span>
-            <input
-              ref={inputRef}
-              value={newFileName}
+            <input ref={inputRef} value={newFileName}
               onChange={(e) => setNewFileName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') createFile()
@@ -117,16 +119,13 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
               }}
               onBlur={() => { if (!newFileName.trim()) { setShowNewInput(false) } }}
               placeholder="file.js"
-              className="flex-1 bg-transparent text-xs border-b border-[var(--accent)] outline-none px-1"
-              autoFocus
-            />
+              className="flex-1 bg-transparent text-xs border-b outline-none px-1" style={{ borderColor: 'var(--accent)', color: 'var(--foreground)' }} autoFocus />
           </div>
         )}
 
         {rootFiles.length === 0 && !isDragActive && (
-          <div className="text-xs text-gray-500 text-center py-8 px-2">
-            No files yet<br />
-            Drop files here or click + to create
+          <div className="text-xs text-center py-8 px-2" style={{ color: 'var(--foreground-muted)' }}>
+            No files yet<br />Drop files here or click + to create
           </div>
         )}
 
@@ -135,27 +134,40 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
             key={file.id}
             file={file}
             isActive={file.id === activeFileId}
+            isRenaming={renamingId === file.id}
+            renameValue={renameValue}
             onSelect={() => onFileSelect(file.id)}
             onDelete={() => deleteFile(file.id, file.name)}
+            onRename={() => startRename(file.id, file.name)}
+            onRenameChange={(v) => setRenameValue(v)}
+            onRenameSubmit={submitRename}
+            onRenameCancel={() => setRenamingId(null)}
             getIcon={getFileIcon}
           />
         ))}
-      </div>
 
-      {isDragActive && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[var(--accent)]/20 rounded-lg pointer-events-none">
-          <p className="text-sm font-medium">Drop files to upload</p>
-        </div>
-      )}
+        {/* Drag overlay */}
+        {isDragActive && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--accent)]/20 rounded-lg pointer-events-none z-10">
+            <p className="text-sm font-medium" style={{ color: 'var(--accent)' }}>Drop files to upload</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-function FileItem({ file, isActive, onSelect, onDelete, getIcon }: {
+function FileItem({ file, isActive, isRenaming, renameValue, onSelect, onDelete, onRename, onRenameChange, onRenameSubmit, onRenameCancel, getIcon }: {
   file: File
   isActive: boolean
+  isRenaming: boolean
+  renameValue: string
   onSelect: () => void
   onDelete: () => void
+  onRename: () => void
+  onRenameChange: (v: string) => void
+  onRenameSubmit: () => void
+  onRenameCancel: () => void
   getIcon: (name: string) => string
 }) {
   const [showActions, setShowActions] = useState(false)
@@ -166,21 +178,36 @@ function FileItem({ file, isActive, onSelect, onDelete, getIcon }: {
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
       className={`flex items-center justify-between px-2 py-1 rounded cursor-pointer text-xs group ${
-        isActive ? 'bg-[var(--file-active)] text-[var(--accent)]' : 'hover:bg-[var(--file-hover)]'
+        isActive ? 'bg-[var(--file-active)]' : 'hover:bg-[var(--file-hover)]'
       }`}
+      style={isActive ? { color: 'var(--accent)' } : {}}
     >
-      <div className="flex items-center gap-1.5 truncate">
-        <span>{getIcon(file.name)}</span>
-        <span className="truncate">{file.name}</span>
+      <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
+        {isRenaming ? (
+          <input value={renameValue}
+            onChange={(e) => onRenameChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onRenameSubmit()
+              if (e.key === 'Escape') onRenameCancel()
+            }}
+            onBlur={onRenameSubmit}
+            className="w-full bg-transparent text-xs border-b outline-none px-0.5"
+            style={{ borderColor: 'var(--accent)', color: 'var(--foreground)' }}
+            autoFocus onClick={(e) => e.stopPropagation()} />
+        ) : (
+          <>
+            <span>{getIcon(file.name)}</span>
+            <span className="truncate">{file.name}</span>
+          </>
+        )}
       </div>
-      {(showActions || isActive) && file.type !== 'folder' && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete() }}
-          className="p-0.5 text-gray-400 hover:text-red-400 transition shrink-0"
-          title="Delete"
-        >
-          ✕
-        </button>
+      {!isRenaming && (showActions || isActive) && file.type !== 'folder' && (
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button onClick={(e) => { e.stopPropagation(); onRename() }}
+            className="p-0.5 opacity-0 group-hover:opacity-100 hover:text-[var(--accent)] transition" title="Rename">✏️</button>
+          <button onClick={(e) => { e.stopPropagation(); onDelete() }}
+            className="p-0.5 text-gray-400 hover:text-red-400 transition" title="Delete">✕</button>
+        </div>
       )}
     </div>
   )
