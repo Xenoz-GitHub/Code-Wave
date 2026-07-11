@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 :root {
+  --primary: #be3056;
+  --primary-foreground: #ffffff;
+  --card: #130a0d;
+  --card-foreground: #f0e8e6;
+  --input: #2a181e;
+  --ring: #be3056;
+  --border: #2a181e;
   --background: #0e080a;
   --background-alt: #160c10;
   --foreground: #f0e8e6;
@@ -22,6 +29,13 @@
 }
 
 [data-theme="light"] {
+  --primary: #be3056;
+  --primary-foreground: #ffffff;
+  --card: #faf5f3;
+  --card-foreground: #1a0f13;
+  --input: #dcc8ce;
+  --ring: #be3056;
+  --border: #dcc8ce;
   --background: #faf5f3;
   --background-alt: #f0e8e6;
   --foreground: #1a0f13;
