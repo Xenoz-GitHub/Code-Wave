@@ -1,31 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --sidebar-bg: #1e1e1e;
-  --editor-bg: #1e1e1e;
-  --panel-bg: #252526;
-  --border-color: #3c3c3c;
-  --accent: #007acc;
-  --tab-active-bg: #1e1e1e;
-  --tab-inactive-bg: #2d2d2d;
-  --file-hover: #2a2d2e;
-  --file-active: #37373d;
+  --background: #0e080a;
+  --background-alt: #160c10;
+  --foreground: #f0e8e6;
+  --foreground-muted: #9a8a8e;
+  --sidebar-bg: #130a0d;
+  --editor-bg: #0e080a;
+  --panel-bg: #1a0f13;
+  --border-color: #2a181e;
+  --border-subtle: rgba(190, 48, 86, 0.12);
+  --accent: #be3056;
+  --accent-hover: #d94a6b;
+  --accent-glow: rgba(190, 48, 86, 0.25);
+  --tab-active-bg: #160c10;
+  --tab-inactive-bg: #1f1218;
+  --file-hover: #1f1218;
+  --file-active: #2a1820;
+  --card-bg: #130a0d;
+  --nav-bg: rgba(14, 8, 10, 0.92);
 }
 
 [data-theme="light"] {
-  --background: #ffffff;
-  --foreground: #171717;
-  --sidebar-bg: #f3f3f3;
+  --background: #faf5f3;
+  --background-alt: #f0e8e6;
+  --foreground: #1a0f13;
+  --foreground-muted: #7a6a6e;
+  --sidebar-bg: #f0e8e6;
   --editor-bg: #ffffff;
-  --panel-bg: #f3f3f3;
-  --border-color: #e0e0e0;
-  --accent: #0078d4;
+  --panel-bg: #f0e8e6;
+  --border-color: #dcc8ce;
+  --border-subtle: rgba(190, 48, 86, 0.1);
+  --accent: #be3056;
+  --accent-hover: #a3284a;
+  --accent-glow: rgba(190, 48, 86, 0.15);
   --tab-active-bg: #ffffff;
-  --tab-inactive-bg: #ececec;
-  --file-hover: #e8e8e8;
-  --file-active: #dcdcdc;
+  --tab-inactive-bg: #f0e8e6;
+  --file-hover: #f0e8e6;
+  --file-active: #e4d6da;
+  --card-bg: #ffffff;
+  --nav-bg: rgba(250, 245, 243, 0.92);
 }
 
 @theme inline {
@@ -37,7 +51,7 @@
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #424242 transparent;
+  scrollbar-color: #3a2028 transparent;
 }
 
 body {
@@ -47,4 +61,11 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(190, 48, 86, 0.3);
+  color: #f0e8e6;
 }

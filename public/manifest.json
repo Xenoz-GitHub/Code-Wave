@@ -4,8 +4,8 @@
   "description": "A powerful browser-based code editor with real-time collaboration",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#007acc",
+  "background_color": "#0e080a",
+  "theme_color": "#be3056",
   "orientation": "any",
   "icons": [
     {
