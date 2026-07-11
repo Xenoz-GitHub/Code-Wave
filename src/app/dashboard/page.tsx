@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth'
 import { Download, Upload, X, Trash, Spinner, Plus } from '@/lib/icons'
+import UserMenu from '@/components/UserMenu'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +57,11 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName, language: newLang }),
       })
+      if (!res.ok) {
+        const err = await res.json()
+        console.error('Create project error:', err)
+        return
+      }
       const project = await res.json()
       setProjects([project, ...projects])
       setShowNew(false)
@@ -116,18 +122,13 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
-      <header className="flex items-center justify-between px-6 py-3 border-b border-[var(--border-color)]">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="text-xl font-bold text-[var(--accent)]">CodeWave</button>
-          <span className="text-sm text-gray-400">/ Dashboard</span>
+      <header className="flex items-center justify-between px-6 py-3 border-b border-[var(--border-color)]" style={{ backgroundColor: 'var(--panel-bg)' }}>
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push('/')} className="text-lg font-bold" style={{ color: 'var(--accent)' }}>CodeWave</button>
+          <span className="text-xs px-2 py-0.5 rounded-full border border-[var(--border-color)]" style={{ color: 'var(--foreground-muted)' }}>Dashboard</span>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/account')}
-            className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-sm font-bold hover:opacity-90 transition"
-          >
-            {user?.name?.[0] || user?.email?.[0] || '?'}
-          </button>
+          <UserMenu user={user} />
         </div>
       </header>
 
@@ -162,8 +163,13 @@ export default function DashboardPage() {
                   <option value="typescript">TypeScript</option>
                   <option value="python">Python</option>
                   <option value="html">HTML</option>
+                  <option value="css">CSS</option>
                   <option value="cpp">C++</option>
                   <option value="rust">Rust</option>
+                  <option value="go">Go</option>
+                  <option value="java">Java</option>
+                  <option value="ruby">Ruby</option>
+                  <option value="php">PHP</option>
                 </select>
                 <button
                   onClick={createProject}
@@ -177,9 +183,15 @@ export default function DashboardPage() {
           )}
 
           {projects.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
-              <p className="text-lg mb-2">No projects yet</p>
-              <p className="text-sm">Create your first project to get started</p>
+            <div className="text-center py-24">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-dashed border-[var(--border-color)] flex items-center justify-center" style={{ color: 'var(--foreground-muted)' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 28, height: 28 }}>
+                  <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z" />
+                  <polyline points="13 2 13 9 20 9" />
+                </svg>
+              </div>
+              <p className="text-base font-medium mb-1">No projects yet</p>
+              <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Create your first project to get started</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

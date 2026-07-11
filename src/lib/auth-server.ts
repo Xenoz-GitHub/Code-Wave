@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createNeonAuth } from '@neondatabase/neon-js/auth/next/server'
+import { createAuthClient } from '@neondatabase/neon-js/auth'
 
 const baseUrl = process.env.NEON_AUTH_BASE_URL || ''
 const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET || ''
@@ -16,10 +17,16 @@ export const auth = createNeonAuth({
   },
 })
 
+// Direct client for getSessionFromRequest (bypasses proxy context)
+let _directClient: any = null
+
 export async function getSessionFromRequest(request: NextRequest) {
   try {
+    if (!_directClient) {
+      _directClient = createAuthClient(baseUrl)
+    }
     const cookieHeader = request.headers.get('cookie') || ''
-    const { data: session } = await auth.getSession({
+    const session = await _directClient.getSession({
       fetchOptions: {
         headers: { Cookie: cookieHeader },
       },

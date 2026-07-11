@@ -12,6 +12,7 @@ import MobileFileDrawer from '@/components/FileManager/MobileFileDrawer'
 import CollaborationOverlay from '@/components/Collaboration/CollaborationOverlay'
 import { getLanguageFromFileName } from '@/lib/utils'
 import { ChevronLeft, ArrowLeft, Sun, Moon, Download, Upload, Folder, FilePlus, Eye, Play, Users, Plus, X, FileIcon, Spinner } from '@/lib/icons'
+import UserMenu from '@/components/UserMenu'
 
 export const dynamic = 'force-dynamic'
 
@@ -421,6 +422,8 @@ export default function EditorPage() {
             className="px-3 py-1 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-1">
             {isRunning ? <><Spinner /> Running...</> : <><Play /> Run</>}
           </button>
+          <div className="ml-2" style={{ borderLeft: '1px solid var(--border-color)', height: 24 }} />
+          <UserMenu user={user} />
         </div>
       </header>
 
