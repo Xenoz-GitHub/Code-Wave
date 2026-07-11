@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" fill="none">
+  <path d="M8 8L2 16L8 24" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16 8L22 16L16 24" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+  <path d="M28 8L32 16L28 24" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="40" y="21" font-family="Inter, -apple-system, sans-serif" font-size="16" font-weight="700" fill="#e2e8f0" letter-spacing="-0.3">CodeWave</text>
+</svg>
