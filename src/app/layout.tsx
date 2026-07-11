@@ -6,8 +6,11 @@ import { authClient } from '@/lib/auth'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import './globals.css'
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then((reg) => {
@@ -41,7 +44,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body className="h-full">
-        <NeonAuthUIProvider emailOTP authClient={authClient}>
+        <NeonAuthUIProvider
+          emailOTP
+          authClient={authClient}
+          navigate={router.push}
+          replace={router.replace}
+          redirectTo="/dashboard"
+        >
           <ThemeProvider>
             {children}
           </ThemeProvider>

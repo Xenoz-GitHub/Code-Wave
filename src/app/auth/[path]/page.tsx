@@ -1,15 +1,18 @@
-'use client'
+import { AuthView } from '@neondatabase/auth-ui'
+import { authViewPaths } from '@neondatabase/auth-ui/server'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
+export const dynamicParams = false
 
-const AuthView = dynamic(
-  () => import('@neondatabase/neon-js/auth/react').then((mod) => ({ default: mod.AuthView })),
-  { ssr: false }
-)
+export function generateStaticParams() {
+  return Object.values(authViewPaths).map((path) => ({ path }))
+}
 
-export default function AuthSlugPage() {
-  const [error, setError] = useState<string | null>(null)
+export default async function AuthPathPage({
+  params,
+}: {
+  params: Promise<{ path: string }>
+}) {
+  const { path } = await params
 
   return (
     <div className="h-full flex items-center justify-center bg-[var(--background)]" style={{ minHeight: '100dvh' }}>
@@ -24,13 +27,8 @@ export default function AuthSlugPage() {
           <p className="text-sm mt-1" style={{ color: 'var(--foreground-muted)' }}>Sign in to start coding</p>
         </div>
         <div className="rounded-lg border p-6" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--panel-bg)' }}>
-          <AuthView />
+          <AuthView path={path} />
         </div>
-        {error && (
-          <div className="mt-3 p-3 rounded-lg text-xs" style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>
-            {error}
-          </div>
-        )}
       </div>
     </div>
   )
