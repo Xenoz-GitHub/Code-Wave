@@ -39,8 +39,10 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId, name: newFileName, type: 'file' }),
       })
-      const data = await res.json()
-      if (data.id) onFileCreated(data)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.id) onFileCreated(data)
+      }
     } catch (e) { console.error(e) }
     setNewFileName('')
     setShowNewInput(false)
@@ -55,8 +57,10 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
     formData.append('file', file)
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (data.id) onFileUpload(data)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.id) onFileUpload(data)
+      }
     } catch (e) { console.error(e) }
     setUploading(false)
   }

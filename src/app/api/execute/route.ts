@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       })
     } catch (e: unknown) {
       clearTimeout(timeoutId)
-      if (e instanceof DOMException && e.name === 'AbortError') {
+      if ((e as Error)?.name === 'AbortError') {
         return Response.json({ error: 'Execution timed out after 60 seconds' }, { status: 504 })
       }
       throw e

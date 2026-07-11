@@ -51,7 +51,7 @@ export default function UserMenu({ user }: { user: any }) {
             </div>
             <div className="border-t border-[var(--border-color)] p-1">
               <button
-                onClick={() => { authClient.signOut(); router.push('/auth') }}
+                onClick={async () => { await authClient.signOut(); router.push('/auth') }}
                 className="w-full text-left px-3 py-2 text-sm rounded hover:bg-red-400/10 transition"
                 style={{ color: '#ef4444' }}
               >

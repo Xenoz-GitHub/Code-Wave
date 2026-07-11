@@ -28,14 +28,7 @@ export async function GET(request: NextRequest) {
           const folder = zipFolder.folder(f.name)
           if (folder) addFilesToZip(f.id, folder)
         } else {
-          const parts: string[] = [f.name]
-          let pid = f.parentId
-          while (pid) {
-            const parent = allFiles.find((ff) => ff.id === pid)
-            if (parent) { parts.unshift(parent.name); pid = parent.parentId }
-            else break
-          }
-          zipFolder.file(parts.join('/'), f.content)
+          zipFolder.file(f.name, f.content)
         }
       }
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { FileIcon, FilePlus, Edit, Trash, Plus, X, Folder } from '@/lib/icons'
 
@@ -31,6 +31,8 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
   const [renameValue, setRenameValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => { if (showNewInput) inputRef.current?.focus() }, [showNewInput])
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: async (acceptedFiles) => {
       for (const f of acceptedFiles) {
@@ -54,10 +56,12 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId, name: newFileName, type: 'file' }),
       })
-      const data = await res.json()
-      if (data.id) {
-        onFileCreated(data)
-        onFileSelect(data.id)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.id) {
+          onFileCreated(data)
+          onFileSelect(data.id)
+        }
       }
     } catch (e) { console.error(e) }
     setNewFileName('')
@@ -96,7 +100,7 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
       <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)]">
         <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--foreground-muted)' }}>Files</span>
         <div className="flex gap-1">
-          <button onClick={() => { setShowNewInput(true); setTimeout(() => inputRef.current?.focus(), 50) }}
+          <button onClick={() => { setShowNewInput(true) }}
             className="p-0.5 hover:text-[var(--accent)] transition" title="New File"><Plus /></button>
         </div>
       </div>

@@ -23,8 +23,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ico: 'image/x-icon', bmp: 'image/bmp',
     }
     const contentType = mimeMap[ext || ''] || 'application/octet-stream'
+    const isImage = contentType.startsWith('image/')
 
-    return new Response(file.content, {
+    return new Response(isImage ? Buffer.from(file.content, 'base64') : file.content, {
       headers: { 'Content-Type': contentType },
     })
   } catch (e) {

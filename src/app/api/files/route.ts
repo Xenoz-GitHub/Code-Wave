@@ -95,11 +95,15 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: 'Not found' }, { status: 404 })
     }
 
-    // Cascade delete children if folder
-    const children = await prisma.file.findMany({ where: { parentId: id } })
-    for (const child of children) {
-      await prisma.file.delete({ where: { id: child.id } })
+    // Recursive cascade delete all descendants
+    async function deleteRecursive(folderId: string) {
+      const children = await prisma.file.findMany({ where: { parentId: folderId } })
+      for (const child of children) {
+        if (child.type === 'folder') await deleteRecursive(child.id)
+        else await prisma.file.delete({ where: { id: child.id } })
+      }
     }
+    await deleteRecursive(id)
     await prisma.file.delete({ where: { id } })
     return Response.json({ success: true })
   } catch (e) {

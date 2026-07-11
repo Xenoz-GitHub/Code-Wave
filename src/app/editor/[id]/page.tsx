@@ -173,18 +173,18 @@ export default function EditorPage() {
     const file = files.find((f) => f.id === fileId)
     if (!file || file.type === 'folder') return
     setActiveFileId(fileId)
-    if (!openTabs.includes(fileId)) {
-      setOpenTabs([...openTabs, fileId])
-    }
+    setOpenTabs((prev) => prev.includes(fileId) ? prev : [...prev, fileId])
   }
 
   function handleTabClose(fileId: string, e: React.MouseEvent) {
     e.stopPropagation()
-    const newTabs = openTabs.filter((id) => id !== fileId)
-    setOpenTabs(newTabs)
-    if (activeFileId === fileId) {
-      setActiveFileId(newTabs[newTabs.length - 1] || null)
-    }
+    setOpenTabs((prev) => {
+      const next = prev.filter((id) => id !== fileId)
+      if (activeFileId === fileId) {
+        setActiveFileId(next[next.length - 1] || null)
+      }
+      return next
+    })
   }
 
   // Save to server with debounce
@@ -213,7 +213,13 @@ export default function EditorPage() {
   // Cancel debounced save on unmount
   useEffect(() => () => { (saveToServer as any).cancel?.() }, [saveToServer])
 
-  function handleEditorChange(value: string | undefined) {
+  const broadcastChange = useCallback((fileId: string, content: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'file-update', fileId, content }))
+    }
+  }, [])
+
+  const handleEditorChange = useCallback((value: string | undefined) => {
     if (!activeFileId || value === undefined) return
     setSaveStatus('unsaved')
     hasUnsavedRef.current = true
@@ -222,7 +228,6 @@ export default function EditorPage() {
       prev.map((f) => (f.id === activeFileId ? { ...f, content: value } : f))
     )
 
-    // LocalStorage backup
     try {
       const lsKey = `${LS_PREFIX}${id}`
       const backup = JSON.parse(localStorage.getItem(lsKey) || '{}')
@@ -230,19 +235,10 @@ export default function EditorPage() {
       localStorage.setItem(lsKey, JSON.stringify(backup))
     } catch {}
 
-    // Auto-save to server
     setSaveStatus('saving')
     saveToServer(activeFileId, value)
-
-    // Broadcast to collaborators
     broadcastChange(activeFileId, value)
-  }
-
-  function broadcastChange(fileId: string, content: string) {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'file-update', fileId, content }))
-    }
-  }
+  }, [activeFileId, id, saveToServer, broadcastChange])
 
   async function handleRun() {
     if (!activeFile) return

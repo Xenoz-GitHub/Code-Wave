@@ -124,6 +124,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isDesktop, setIsDesktop] = useState(true)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -134,10 +135,13 @@ export default function LandingPage() {
   }, [])
 
   useEffect(() => {
-    authClient.getSession().then((res: any) => setUser(res?.data?.user || null)).catch(() => {})
+    mountedRef.current = true
+    authClient.getSession().then((res: any) => {
+      if (mountedRef.current) setUser(res?.data?.user || null)
+    }).catch(() => {})
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => { mountedRef.current = false; window.removeEventListener('scroll', onScroll) }
   }, [])
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { AccountView, SignOut } from '@neondatabase/neon-js/auth/react'
+import { AccountView } from '@neondatabase/neon-js/auth/react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth'
 
@@ -31,8 +31,7 @@ export default function AccountPage() {
           </div>
         </div>
         <div className="mt-auto">
-          <SignOut /> 
-          <button onClick={() => { authClient.signOut?.(); router.push('/auth') }} className="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 rounded transition">
+          <button onClick={async () => { await authClient.signOut(); router.push('/auth') }} className="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 rounded transition">
             Sign Out
           </button>
         </div>
