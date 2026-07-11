@@ -1,46 +1,56 @@
-const CACHE_NAME = 'codewave-v1'
+const CACHE = 'codewave-v2'
+const STATIC_ASSETS = ['/manifest.json']
 
-const urlsToCache = [
-  '/',
-  '/dashboard',
-  '/auth',
-  '/manifest.json',
-]
+self.addEventListener('install', (e) => {
+  self.skipWaiting()
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(STATIC_ASSETS)))
+})
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    Promise.all([
+      clients.claim(),
+      caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))),
+    ])
   )
 })
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) return response
-      return fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const cacheResponse = networkResponse.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheResponse))
-        }
-        return networkResponse
-      })
-    }).catch(() => {
-      return caches.match('/')
-    })
-  )
+self.addEventListener('fetch', (e) => {
+  const req = e.request
+  if (req.method !== 'GET') return
+
+  if (req.mode === 'navigate') {
+    e.respondWith(networkFirst(req))
+  } else {
+    e.respondWith(cacheFirst(req))
+  }
 })
 
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME]
-  event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            return caches.delete(cacheName)
-          }
-        })
-      )
-    )
-  )
-})
+async function networkFirst(req) {
+  try {
+    const res = await fetch(req)
+    if (res.ok) {
+      const cache = await caches.open(CACHE)
+      cache.put(req, res.clone())
+    }
+    return res
+  } catch {
+    const cached = await caches.match(req)
+    return cached || new Response('Offline', { status: 503 })
+  }
+}
+
+async function cacheFirst(req) {
+  const cached = await caches.match(req)
+  if (cached) return cached
+  try {
+    const res = await fetch(req)
+    if (res.ok) {
+      const cache = await caches.open(CACHE)
+      cache.put(req, res.clone())
+    }
+    return res
+  } catch {
+    return new Response('', { status: 408 })
+  }
+}

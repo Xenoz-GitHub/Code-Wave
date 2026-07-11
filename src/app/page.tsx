@@ -41,6 +41,30 @@ function CodeBracket() {
   )
 }
 
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <path d="M3 6H17" /><path d="M3 10H17" /><path d="M3 14H17" />
+    </svg>
+  )
+}
+
+function XIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <path d="M6 6L14 14" /><path d="M14 6L6 14" />
+    </svg>
+  )
+}
+
+function GitHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.73.083-.73 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.776.418-1.306.762-1.604-2.665-.305-5.467-1.333-5.467-5.93 0-1.31.468-2.38 1.235-3.22-.123-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.24 2.874.118 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.807 5.62-5.48 5.92.43.37.823 1.102.823 2.22 0 1.602-.015 2.894-.015 3.287 0 .322.216.694.825.577C20.565 21.795 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
+    </svg>
+  )
+}
+
 const FEATURES = [
   {
     icon: <CodeBracket />,
@@ -133,6 +157,8 @@ const EDITOR_CODE = [
 export default function LandingPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const heroRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
   const featuresRef = useRef<HTMLDivElement>(null)
@@ -144,45 +170,123 @@ export default function LandingPage() {
 
   useEffect(() => {
     authClient.getUser().then((u: any) => setUser(u)).catch(() => {})
+    const onScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
 
   return (
     <div style={{ backgroundColor: '#0b0e14', color: '#e2e8f0', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
       {/* NAV */}
-      <nav className="sticky top-0 z-50" style={{ backgroundColor: 'rgba(11,14,20,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3.5">
+      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        style={{
+          backgroundColor: scrolled ? 'rgba(11,14,20,0.92)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(24px)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.04)' : '1px solid transparent',
+        }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3.5">
           <a href="/" className="flex items-center gap-2.5">
-            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg, #6366f1, #06b6d4)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg, #6366f1, #06b6d4)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}>
               <svg viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 10, height: 10 }}>
                 <path d="M6 5L4 8L6 11" /><path d="M10 5L12 8L10 11" opacity="0.6" />
               </svg>
             </div>
             <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.3px' }}>CodeWave</span>
           </a>
-          <div className="flex items-center gap-4">
-            <a href="#features" style={{ color: '#64748b', fontSize: 13, textDecoration: 'none' }}>Features</a>
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}
+              style={{ color: '#64748b', fontSize: 13, textDecoration: 'none', transition: 'color 0.2s' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#94a3b8' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b' }}>
+              Features
+            </a>
+            <a href="https://github.com/Xenoz-GitHub/Code-Wave" target="_blank" rel="noopener noreferrer"
+              style={{ color: '#64748b', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.2s' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#94a3b8' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b' }}>
+              <GitHubIcon /> GitHub
+            </a>
             {user ? (
               <button onClick={() => router.push('/dashboard')}
-                style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white' }}>
+                style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#5558e6' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#6366f1' }}>
                 Dashboard
               </button>
             ) : (
               <>
-                <button onClick={() => router.push('/auth')} style={{ padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+                <button onClick={() => router.push('/auth')}
+                  style={{ padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#e2e8f0' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#94a3b8' }}>
                   Sign In
                 </button>
                 <button onClick={() => router.push('/auth')}
-                  style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white' }}>
+                  style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#5558e6' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#6366f1' }}>
                   Get Started
                 </button>
               </>
             )}
           </div>
+
+          {/* Mobile hamburger */}
+          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}
+            style={{ background: 'none', border: 'none', color: '#e2e8f0', cursor: 'pointer', padding: 4 }}>
+            {menuOpen ? <XIcon /> : <MenuIcon />}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div style={{ backgroundColor: 'rgba(11,14,20,0.98)', borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '16px 24px 24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <a href="#features" onClick={(e) => { e.preventDefault(); setMenuOpen(false); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}
+                style={{ color: '#64748b', fontSize: 14, textDecoration: 'none', padding: '8px 0' }}>
+                Features
+              </a>
+              <a href="https://github.com/Xenoz-GitHub/Code-Wave" target="_blank" rel="noopener noreferrer"
+                style={{ color: '#64748b', fontSize: 14, textDecoration: 'none', padding: '8px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <GitHubIcon /> GitHub
+              </a>
+              <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.04)', margin: '4px 0' }} />
+              {user ? (
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard') }}
+                  style={{ width: '100%', padding: '10px', borderRadius: 8, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white' }}>
+                  Dashboard
+                </button>
+              ) : (
+                <>
+                  <button onClick={() => { setMenuOpen(false); router.push('/auth') }}
+                    style={{ width: '100%', padding: '10px', borderRadius: 8, fontSize: 14, fontWeight: 500, border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+                    Sign In
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); router.push('/auth') }}
+                    style={{ width: '100%', padding: '10px', borderRadius: 8, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white' }}>
+                    Get Started
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
+      {/* Spacer for fixed nav */}
+      <div style={{ height: 56 }} />
+
       {/* HERO */}
-      <section ref={heroRef} style={{ paddingTop: 80, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
+      <section ref={heroRef} style={{ paddingTop: 40, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
         <div className="max-w-6xl mx-auto">
           <div style={{ maxWidth: 640, marginBottom: 64 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 1000, fontSize: 12, fontWeight: 500, marginBottom: 24, backgroundColor: 'rgba(99,102,241,0.08)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.15)' }}>
@@ -202,11 +306,15 @@ export default function LandingPage() {
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <button onClick={() => router.push(user ? '/dashboard' : '/auth')}
-                style={{ padding: '12px 28px', borderRadius: 10, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white', boxShadow: '0 4px 24px rgba(99,102,241,0.25)' }}>
+                style={{ padding: '12px 28px', borderRadius: 10, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white', boxShadow: '0 4px 24px rgba(99,102,241,0.25)', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 6px 32px rgba(99,102,241,0.35)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(99,102,241,0.25)'; e.currentTarget.style.transform = 'translateY(0)' }}>
                 Start Coding Free
               </button>
               <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                style={{ padding: '12px 28px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+                style={{ padding: '12px 28px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#e2e8f0' }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#94a3b8' }}>
                 View Features
               </button>
             </div>
@@ -321,7 +429,9 @@ export default function LandingPage() {
             Create a free account. No credit card. No setup. Just pure code.
           </p>
           <button onClick={() => router.push(user ? '/dashboard' : '/auth')}
-            style={{ padding: '12px 32px', borderRadius: 10, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white', boxShadow: '0 4px 24px rgba(99,102,241,0.25)' }}>
+            style={{ padding: '12px 32px', borderRadius: 10, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: 'white', boxShadow: '0 4px 24px rgba(99,102,241,0.25)', transition: 'all 0.2s' }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 6px 32px rgba(99,102,241,0.35)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(99,102,241,0.25)'; e.currentTarget.style.transform = 'translateY(0)' }}>
             {user ? 'Go to Dashboard' : 'Create Free Account'}
           </button>
         </div>
@@ -329,7 +439,7 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div className="max-w-6xl mx-auto" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12, color: '#334155' }}>
+        <div className="max-w-6xl mx-auto" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12, color: '#334155', flexWrap: 'wrap' }}>
           <div style={{ width: 18, height: 18, borderRadius: 5, background: 'linear-gradient(135deg, #6366f1, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" style={{ width: 6, height: 6 }}>
               <path d="M4 3L3 5L4 7" /><path d="M6 3L7 5L6 7" opacity="0.6" />
