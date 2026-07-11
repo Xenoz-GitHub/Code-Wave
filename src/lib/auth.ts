@@ -1,8 +1,3 @@
-import { createAuthClient } from '@neondatabase/neon-js/auth'
+import { createAuthClient } from '@neondatabase/neon-js/auth/next'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _client: any = createAuthClient(
-  process.env.NEXT_PUBLIC_NEON_AUTH_URL || ''
-)
-
-export const authClient = _client
+export const authClient = createAuthClient()

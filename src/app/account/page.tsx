@@ -2,28 +2,18 @@
 
 import { AccountView, SignOut } from '@neondatabase/neon-js/auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { authClient } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export default function AccountPage() {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: session, isPending } = authClient.useSession()
+  const user = session?.user || null
 
-  useEffect(() => {
-    authClient.getUser().then((u: any) => {
-      if (!u) { router.push('/auth'); return }
-      setUser(u)
-      setLoading(false)
-    }).catch(() => {
-      router.push('/auth')
-      setLoading(false)
-    })
-  }, [router])
+  if (isPending) return <div className="h-full flex items-center justify-center bg-[var(--background)]"><div className="animate-spin w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full" /></div>
 
-  if (loading) return <div className="h-full flex items-center justify-center bg-[var(--background)]"><div className="animate-spin w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full" /></div>
+  if (!user) { router.push('/auth'); return null }
 
   return (
     <div className="h-full flex bg-[var(--background)]">

@@ -95,7 +95,8 @@ export default function EditorPage() {
 
   // Load user and project
   useEffect(() => {
-    authClient.getUser().then((u: any) => {
+    authClient.getSession().then((res: any) => {
+      const u = res?.data?.user
       if (!u) { router.push('/auth'); return }
       setUser(u)
       loadProject()

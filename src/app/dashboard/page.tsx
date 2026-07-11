@@ -28,7 +28,8 @@ export default function DashboardPage() {
   const importRefs = useRef<Record<string, HTMLInputElement>>({})
 
   useEffect(() => {
-    authClient.getUser().then((u: any) => {
+    authClient.getSession().then((res: any) => {
+      const u = res?.data?.user
       if (!u) { router.push('/auth'); return }
       setUser(u)
       fetchProjects()

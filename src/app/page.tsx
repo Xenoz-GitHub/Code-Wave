@@ -134,7 +134,7 @@ export default function LandingPage() {
   }, [])
 
   useEffect(() => {
-    authClient.getUser().then((u: any) => setUser(u)).catch(() => {})
+    authClient.getSession().then((res: any) => setUser(res?.data?.user || null)).catch(() => {})
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)

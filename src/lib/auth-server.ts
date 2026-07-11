@@ -1,18 +1,25 @@
 import { NextRequest } from 'next/server'
-import { createAuthClient } from '@neondatabase/neon-js/auth'
+import { createNeonAuth } from '@neondatabase/neon-js/auth/next/server'
 
-const authUrl = process.env.NEXT_PUBLIC_NEON_AUTH_URL || ''
+const baseUrl = process.env.NEON_AUTH_BASE_URL || ''
+const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET || ''
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _serverClient: any = null
+if (!baseUrl || !cookieSecret) {
+  console.error('Missing NEON_AUTH_BASE_URL or NEON_AUTH_COOKIE_SECRET environment variables')
+}
+
+export const auth = createNeonAuth({
+  baseUrl,
+  cookies: {
+    secret: cookieSecret,
+    sessionDataTtl: 300,
+  },
+})
 
 export async function getSessionFromRequest(request: NextRequest) {
   try {
-    if (!_serverClient) {
-      _serverClient = createAuthClient(authUrl)
-    }
     const cookieHeader = request.headers.get('cookie') || ''
-    const session = await _serverClient.getSession({
+    const { data: session } = await auth.getSession({
       fetchOptions: {
         headers: { Cookie: cookieHeader },
       },
