@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { getSessionFromRequest } from '@/lib/auth-server'
 
 const PISTON_API = 'https://emkc.org/api/v2/piston/execute'
 
@@ -30,6 +31,9 @@ const TIMEOUT_MS = 60000
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getSessionFromRequest(request)
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { language, code } = await request.json()
     if (!language || !code) {
       return Response.json({ error: 'language and code are required' }, { status: 400 })

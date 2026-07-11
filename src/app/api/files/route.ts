@@ -95,6 +95,11 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: 'Not found' }, { status: 404 })
     }
 
+    // Cascade delete children if folder
+    const children = await prisma.file.findMany({ where: { parentId: id } })
+    for (const child of children) {
+      await prisma.file.delete({ where: { id: child.id } })
+    }
     await prisma.file.delete({ where: { id } })
     return Response.json({ success: true })
   } catch (e) {

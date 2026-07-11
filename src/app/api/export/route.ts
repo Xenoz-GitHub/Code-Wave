@@ -20,11 +20,26 @@ export async function GET(request: NextRequest) {
 
     const JSZip = (await import('jszip')).default
     const zip = new JSZip()
+    const allFiles = project.files
 
-    const rootFiles = project.files.filter((f) => !f.parentId)
-    for (const file of rootFiles) {
-      zip.file(file.name, file.content)
+    function addFilesToZip(parentId: string | null, zipFolder: typeof zip) {
+      for (const f of allFiles.filter((ff) => ff.parentId === parentId)) {
+        if (f.type === 'folder') {
+          const folder = zipFolder.folder(f.name)
+          if (folder) addFilesToZip(f.id, folder)
+        } else {
+          const parts: string[] = [f.name]
+          let pid = f.parentId
+          while (pid) {
+            const parent = allFiles.find((ff) => ff.id === pid)
+            if (parent) { parts.unshift(parent.name); pid = parent.parentId }
+            else break
+          }
+          zipFolder.file(parts.join('/'), f.content)
+        }
+      }
     }
+    addFilesToZip(null, zip)
 
     const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
 

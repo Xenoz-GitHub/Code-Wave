@@ -20,12 +20,15 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Not found' }, { status: 404 })
     }
 
-    const content = await file.text()
+    const isImage = file.type.startsWith('image/')
+    const content = isImage
+      ? Buffer.from(await file.arrayBuffer()).toString('base64')
+      : await file.text()
     const newFile = await prisma.file.create({
       data: {
         name: file.name,
-        content: content,
-        type: file.type.startsWith('image/') ? 'image' : 'file',
+        content,
+        type: isImage ? 'image' : 'file',
         projectId,
       },
     })

@@ -63,8 +63,11 @@ export default function MobileFileDrawer({ files, projectId, activeFileId, onFil
 
   async function deleteFile(id: string, name: string) {
     if (!confirm(`Delete "${name}"?`)) return
-    await fetch(`/api/files?id=${id}`, { method: 'DELETE' })
-    onFileDeleted(id)
+    try {
+      const res = await fetch(`/api/files?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) return
+      onFileDeleted(id)
+    } catch (e) { console.error(e) }
   }
 
   async function submitRename() {

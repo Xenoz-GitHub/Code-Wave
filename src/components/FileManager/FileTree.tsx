@@ -66,8 +66,11 @@ export default function FileTree({ files, projectId, activeFileId, onFileSelect,
 
   async function deleteFile(id: string, name: string) {
     if (!confirm(`Delete "${name}"?`)) return
-    await fetch(`/api/files?id=${id}`, { method: 'DELETE' })
-    onFileDeleted(id)
+    try {
+      const res = await fetch(`/api/files?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) return
+      onFileDeleted(id)
+    } catch (e) { console.error(e) }
   }
 
   function startRename(id: string, name: string) {

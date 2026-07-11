@@ -10,25 +10,37 @@ type Props = {
 
 export default function LivePreview({ code, language }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const blobUrlsRef = useRef<string[]>([])
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile' | 'tablet'>('desktop')
 
   useEffect(() => {
+    // Revoke previous blob URLs
+    blobUrlsRef.current.forEach(URL.revokeObjectURL)
+    blobUrlsRef.current = []
+
     if (!iframeRef.current || !code) return
     const iframe = iframeRef.current
 
+    function setBlobSrc(html: string, type: string) {
+      const blob = new Blob([html], { type })
+      const url = URL.createObjectURL(blob)
+      blobUrlsRef.current.push(url)
+      iframe.src = url
+    }
+
     if (language === 'html') {
-      const blob = new Blob([code], { type: 'text/html' })
-      iframe.src = URL.createObjectURL(blob)
+      setBlobSrc(code, 'text/html')
     } else if (language === 'javascript' || language === 'typescript') {
-      const html = `<!DOCTYPE html><html><body><script>${code}<\/script></body></html>`
-      const blob = new Blob([html], { type: 'text/html' })
-      iframe.src = URL.createObjectURL(blob)
+      setBlobSrc(`<!DOCTYPE html><html><body><script>${code}<\/script></body></html>`, 'text/html')
     } else if (language === 'css') {
-      const html = `<!DOCTYPE html><html><head><style>${code}</style></head><body><div class="preview" style="padding:20px;font-family:sans-serif">CSS Preview</div></body></html>`
-      const blob = new Blob([html], { type: 'text/html' })
-      iframe.src = URL.createObjectURL(blob)
+      setBlobSrc(`<!DOCTYPE html><html><head><style>${code}</style></head><body><div class="preview" style="padding:20px;font-family:sans-serif">CSS Preview</div></body></html>`, 'text/html')
     } else {
       iframe.srcdoc = '<p style="color:gray;font-family:sans-serif;padding:20px">Preview not available for this language</p>'
+    }
+
+    return () => {
+      blobUrlsRef.current.forEach(URL.revokeObjectURL)
+      blobUrlsRef.current = []
     }
   }, [code, language])
 

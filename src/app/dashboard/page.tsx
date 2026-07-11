@@ -6,8 +6,6 @@ import { authClient } from '@/lib/auth'
 import { Download, Upload, X, Trash, Spinner, Plus } from '@/lib/icons'
 import UserMenu from '@/components/UserMenu'
 
-export const dynamic = 'force-dynamic'
-
 type Project = {
   id: string
   name: string
@@ -75,8 +73,11 @@ export default function DashboardPage() {
 
   async function deleteProject(id: string) {
     if (!confirm('Delete this project?')) return
-    await fetch(`/api/projects?id=${id}`, { method: 'DELETE' })
-    setProjects(projects.filter((p) => p.id !== id))
+    try {
+      const res = await fetch(`/api/projects?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) return
+      setProjects(projects.filter((p) => p.id !== id))
+    } catch (e) { console.error(e) }
   }
 
   async function exportProject(id: string, name: string, e: React.MouseEvent) {

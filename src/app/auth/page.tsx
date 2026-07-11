@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import dynamic from 'next/dynamic'
 
 const AuthView = dynamic(
@@ -9,8 +8,6 @@ const AuthView = dynamic(
 )
 
 export default function AuthPage() {
-  const [error, setError] = useState<string | null>(null)
-
   return (
     <div className="h-full flex items-center justify-center bg-[var(--background)]" style={{ minHeight: '100dvh' }}>
       <div className="w-full max-w-md p-6">
@@ -27,11 +24,6 @@ export default function AuthPage() {
         <div className="rounded-lg border p-6" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--panel-bg)' }}>
           <AuthView />
         </div>
-        {error && (
-          <div className="mt-3 p-3 rounded-lg text-xs" style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>
-            {error}
-          </div>
-        )}
       </div>
     </div>
   )

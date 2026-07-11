@@ -1,7 +1,6 @@
 'use client'
 
 import { NeonAuthUIProvider } from '@neondatabase/neon-js/auth/react'
-import '@neondatabase/neon-js/ui/css'
 import { authClient } from '@/lib/auth'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import './globals.css'
@@ -43,6 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){try{var t=localStorage.getItem('codewave-theme');document.documentElement.setAttribute('data-theme',t||'dark')}catch(e){}})()`
+        }} />
       </head>
       <body className="h-full">
         <NeonAuthUIProvider

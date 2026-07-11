@@ -11,10 +11,8 @@ import LivePreview from '@/components/Preview/LivePreview'
 import MobileFileDrawer from '@/components/FileManager/MobileFileDrawer'
 import CollaborationOverlay from '@/components/Collaboration/CollaborationOverlay'
 import { getLanguageFromFileName } from '@/lib/utils'
-import { ChevronLeft, ArrowLeft, Sun, Moon, Download, Upload, Folder, FilePlus, Eye, Play, Users, Plus, X, FileIcon, Spinner } from '@/lib/icons'
+import { ArrowLeft, Sun, Moon, Download, Upload, Folder, FilePlus, Eye, Play, Users, Plus, X, Spinner } from '@/lib/icons'
 import UserMenu from '@/components/UserMenu'
-
-export const dynamic = 'force-dynamic'
 
 type File = {
   id: string
@@ -35,13 +33,14 @@ type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error'
 
 const LS_PREFIX = 'codewave-draft-'
 
-function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T {
+function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T & { cancel: () => void } {
   let timer: ReturnType<typeof setTimeout> | null = null
   const debounced = (...args: any[]) => {
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => fn(...args), delay)
   }
-  return debounced as T
+  debounced.cancel = () => { if (timer) { clearTimeout(timer); timer = null } }
+  return debounced as T & { cancel: () => void }
 }
 
 function useIsDesktop() {
@@ -67,6 +66,9 @@ export default function EditorPage() {
   const [activeFileId, setActiveFileId] = useState<string | null>(null)
   const [openTabs, setOpenTabs] = useState<string[]>([])
   const [output, setOutput] = useState('')
+
+  // Keep ref in sync for WS closure
+  useEffect(() => { activeFileIdRef.current = activeFileId }, [activeFileId])
   const [isRunning, setIsRunning] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showMobileDrawer, setShowMobileDrawer] = useState(false)
@@ -79,6 +81,7 @@ export default function EditorPage() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved')
   const importRef = useRef<HTMLInputElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
+  const activeFileIdRef = useRef<string | null>(null)
   const contentBackupRef = useRef<Map<string, string>>(new Map())
 
   // Track unsaved changes for beforeunload
@@ -96,51 +99,48 @@ export default function EditorPage() {
 
   // Load user and project
   useEffect(() => {
-    authClient.getSession().then((res: any) => {
+    authClient.getSession().then(async (res: any) => {
       const u = res?.data?.user
       if (!u) { router.push('/auth'); return }
       setUser(u)
-      loadProject()
+
+      try {
+        const [projectRes, filesRes] = await Promise.all([
+          fetch(`/api/projects?id=${id}`).then(r => r.json()).catch(() => null),
+          fetch(`/api/files?projectId=${id}`).then(r => r.json()),
+        ])
+        if (projectRes?.error || !Array.isArray(filesRes)) {
+          router.push('/dashboard')
+          return
+        }
+        setProject(projectRes)
+        setFiles(filesRes)
+
+        // Try to restore from localStorage backup
+        const lsKey = `${LS_PREFIX}${id}`
+        try {
+          const backup = localStorage.getItem(lsKey)
+          if (backup) {
+            const parsed = JSON.parse(backup) as Record<string, string>
+            filesRes.forEach((f: File) => {
+              if (parsed[f.id] && parsed[f.id] !== f.content) {
+                f.content = parsed[f.id]
+              }
+            })
+            localStorage.removeItem(lsKey)
+          }
+        } catch {}
+
+        if (filesRes.length > 0) {
+          setActiveFileId(filesRes[0].id)
+          setOpenTabs([filesRes[0].id])
+        }
+      } catch (e) {
+        console.error(e)
+        router.push('/dashboard')
+      }
     }).catch(() => router.push('/auth'))
   }, [id, router])
-
-  async function loadProject() {
-    try {
-      const [projectRes, filesRes] = await Promise.all([
-        fetch(`/api/projects?id=${id}`).then(r => r.json()).catch(() => null),
-        fetch(`/api/files?projectId=${id}`).then(r => r.json()),
-      ])
-      if (projectRes?.error || !Array.isArray(filesRes)) {
-        router.push('/dashboard')
-        return
-      }
-      setProject(projectRes)
-      setFiles(filesRes)
-
-      // Try to restore from localStorage backup
-      const lsKey = `${LS_PREFIX}${id}`
-      try {
-        const backup = localStorage.getItem(lsKey)
-        if (backup) {
-          const parsed = JSON.parse(backup) as Record<string, string>
-          filesRes.forEach((f: File) => {
-            if (parsed[f.id] && parsed[f.id] !== f.content) {
-              f.content = parsed[f.id]
-            }
-          })
-          localStorage.removeItem(lsKey)
-        }
-      } catch {}
-
-      if (filesRes.length > 0) {
-        setActiveFileId(filesRes[0].id)
-        setOpenTabs([filesRes[0].id])
-      }
-    } catch (e) {
-      console.error(e)
-      router.push('/dashboard')
-    }
-  }
 
   // Collaboration WebSocket
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function EditorPage() {
         try {
           const data = JSON.parse(event.data)
           if (data.type === 'users') setCollabUsers(data.users)
-          else if (data.type === 'file-update' && data.fileId !== activeFileId) {
+          else if (data.type === 'file-update' && data.fileId !== activeFileIdRef.current) {
             setFiles((prev) => prev.map((f) => f.id === data.fileId ? { ...f, content: data.content } : f))
           } else if (data.type === 'file-created') setFiles((prev) => [...prev, data.file])
           else if (data.type === 'file-deleted') setFiles((prev) => prev.filter((f) => f.id !== data.fileId))
@@ -209,6 +209,9 @@ export default function EditorPage() {
     }, 1200),
     []
   )
+
+  // Cancel debounced save on unmount
+  useEffect(() => () => { (saveToServer as any).cancel?.() }, [saveToServer])
 
   function handleEditorChange(value: string | undefined) {
     if (!activeFileId || value === undefined) return

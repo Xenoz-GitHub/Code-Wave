@@ -24,29 +24,51 @@ export async function POST(request: NextRequest) {
     const zipData = await file.arrayBuffer()
     const zip = await JSZip.loadAsync(zipData)
 
-    const filesToCreate: { name: string; content: string; type: string; projectId: string }[] = []
-
-    zip.forEach((relativePath, zipEntry) => {
-      if (!zipEntry.dir) {
-        filesToCreate.push({
-          name: relativePath,
-          content: '',
-          type: 'file',
-          projectId,
-        })
+    async function createPath(dirPath: string, pid: string): Promise<string | null> {
+      const parts = dirPath.replace(/\/$/, '').split('/')
+      let currentParent: string | null = null
+      for (const part of parts) {
+        if (!part) continue
+        const parent = currentParent as string | null
+        let existing: any
+        if (parent) {
+          existing = await prisma.file.findFirst({ where: { name: part, parentId: parent, projectId } })
+        } else {
+          existing = await prisma.file.findFirst({ where: { name: part, parentId: null, projectId, type: 'folder' } })
+        }
+        if (existing) {
+          currentParent = existing.id
+        } else {
+          const newFolder = await prisma.file.create({
+            data: { name: part, content: '', type: 'folder', parentId: parent, projectId },
+          })
+          currentParent = newFolder.id
+        }
       }
-    })
+      return currentParent
+    }
+
+    const entries: { name: string; content: string; parentId: string | null }[] = []
+
+    for (const relativePath of Object.keys(zip.files)) {
+      const zipEntry = zip.files[relativePath]
+      if (zipEntry.dir) continue
+      const parts = relativePath.split('/')
+      const fileName = parts.pop()!
+      let parentId: string | null = null
+      if (parts.length > 0) {
+        parentId = await createPath(parts.join('/'), projectId)
+      }
+      const content = await zipEntry.async('string')
+      entries.push({ name: fileName, content, parentId })
+    }
 
     await Promise.all(
-      filesToCreate.map(async (f) => {
-        const entry = zip.file(f.name)
-        if (entry) {
-          const content = await entry.async('string')
-          await prisma.file.create({
-            data: { ...f, content },
-          })
-        }
-      })
+      entries.map((e) =>
+        prisma.file.create({
+          data: { name: e.name, content: e.content, type: 'file', parentId: e.parentId, projectId },
+        })
+      )
     )
 
     const updatedFiles = await prisma.file.findMany({
