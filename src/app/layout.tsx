@@ -1,6 +1,7 @@
 'use client'
 
 import { NeonAuthUIProvider } from '@neondatabase/neon-js/auth/react'
+import '@neondatabase/neon-js/ui/css'
 import { authClient } from '@/lib/auth'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import './globals.css'
