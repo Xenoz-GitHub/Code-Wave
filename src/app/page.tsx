@@ -247,7 +247,6 @@ function ParticleField() {
 export default function LandingPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const featuresRef = useRef<HTMLDivElement>(null)
   const [visibleFeatures, setVisibleFeatures] = useState<Set<number>>(new Set())
 
@@ -255,10 +254,7 @@ export default function LandingPage() {
   const { displayed: typedLine, done: typingDone } = useTypewriter(headline, 45)
 
   useEffect(() => {
-    authClient.getUser().then((u: any) => {
-      setUser(u)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+    authClient.getUser().then((u: any) => setUser(u)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -279,14 +275,6 @@ export default function LandingPage() {
 
     return () => observer.disconnect()
   }, [])
-
-  if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center" style={{ backgroundColor: '#02050a' }}>
-        <div className="animate-spin w-8 h-8 border-2 border-[#3b82f6] border-t-transparent rounded-full" />
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-full overflow-x-hidden" style={{ backgroundColor: '#02050a', color: '#e2e8f0' }}>
